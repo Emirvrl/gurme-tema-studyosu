@@ -8,6 +8,7 @@ export const HEADER_VARIANTS = [
   { id: 'bold', name: 'Renkli kapsül', desc: 'Ana renk tonunda adres' },
   { id: 'glass', name: 'Cam kapsül', desc: 'Yarı saydam yüzey' },
   { id: 'editorial', name: 'Metin bağlantısı', desc: 'Kutusuz, italik ve altı noktalı' },
+  { id: 'band', name: 'Renkli bant', desc: 'Ana renkli üst bant, beyaz logo' },
 ];
 
 export const SEARCH_VARIANTS = [
@@ -131,6 +132,49 @@ export const NAV_VARIANTS = [
     floating: true,
     pros: ['Uygulama ikonu estetiği; dokunsal ve renkli.', 'Aktif sekme büyüyerek net vurgulanır.'],
     cons: ['Etiketsiz ikonlar ilk bakışta anlaşılmayabilir.'],
+  },
+  {
+    id: 'segmented', name: 'Hap Sekmeler', desc: 'Segment kontrol, aktif dolu kapsül',
+    floating: true,
+    pros: ['Aktif sekme yüzey rengiyle çok net; modern ve derli toplu.'],
+    cons: ['Sepet diğer sekmelerle eşit; ana eylem öne çıkmaz.'],
+  },
+  {
+    id: 'fab', name: 'Sağ FAB', desc: 'Sepet sağda süzülen geniş buton',
+    floating: true,
+    pros: ['Sepet her ekranda başparmağın altında; dönüşüm odaklı.', 'Material dilinde tanıdık bir kalıp.'],
+    cons: ['FAB içeriğin bir kısmını kapatır; ekstra alt boşluk gerekir.'],
+  },
+  {
+    id: 'iconDot', name: 'İkon + Nokta', desc: 'Etiketsiz ikonlar, uzayan nokta',
+    pros: ['Çok sade ve sakin; içerik ön planda.', 'Sepet sayısı ikonun yanında yazılı.'],
+    cons: ['Etiket olmadığı için yeni kullanıcılar zorlanabilir.'],
+  },
+  {
+    id: 'gradient', name: 'Gradyan Şerit', desc: 'Ana → vurgu gradyanlı ada',
+    floating: true,
+    pros: ['Markanın renklerini her ekranın altında taşır; enerjik.'],
+    cons: ['Renkli blok içerikle yarışabilir; gradyan renkleri iyi seçilmeli.'],
+  },
+  {
+    id: 'bubble', name: 'Kabarcık', desc: 'Aktif ikon yukarı taşan daireye kayar',
+    pros: ['Animasyonlu ve akılda kalıcı; aktif sekme çok belirgin.'],
+    cons: ['Hareket fazla oyuncu bulunabilir; kurumsal markalar için riskli.'],
+  },
+  {
+    id: 'outlineBox', name: 'Kontur Kutu', desc: 'Çerçeveli kutular, aktif dolu',
+    pros: ['Taslağın kalın çizgi diline yakın; net dokunma alanları.'],
+    cons: ['Beş kutu yan yana kalabalık görünebilir.'],
+  },
+  {
+    id: 'slider', name: 'Kayan Çizgi', desc: 'Üstte aktif sekmeye kayan çizgi',
+    pros: ['Hafif ve zarif; geçişte çizgi kayarak yön hissi verir.'],
+    cons: ['Sepet görsel olarak öne çıkmaz.'],
+  },
+  {
+    id: 'folder', name: 'Klasör Sekmeleri', desc: 'Aktif sekme klasör kulağı gibi yükselir',
+    pros: ['Özgün ve dokunsal; aktif sekme sayfayla birleşir.'],
+    cons: ['Gömme zemin rengi koyu temada dikkat ister.'],
   },
 ];
 

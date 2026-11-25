@@ -144,3 +144,86 @@ export const NAV_ITEMS = [
 ];
 
 export const CART_COUNT = 2;
+
+/* ------------------------------------------------------------------ */
+/* Yemekler, siparişler ve hesap (temsili demo verisi)                 */
+/* ------------------------------------------------------------------ */
+
+export const DISHES = [
+  { id: 'd1', name: 'Double Cheese Burger', desc: 'Çift köfte, cheddar, karamelize soğan', price: 245, restaurantId: 'r1', cuisine: 'burger', img: IMG.burger, emoji: '🍔' },
+  { id: 'd2', name: 'Trüf Mantarlı Burger', desc: 'Trüf mayonez, közlenmiş mantar', price: 285, restaurantId: 'r1', cuisine: 'burger', img: u('photo-1550547660-d9450f859349'), emoji: '🍔' },
+  { id: 'd3', name: 'Çıtır Patates', desc: 'Baharatlı, büyük boy', price: 65, restaurantId: 'r1', cuisine: 'burger', img: u('photo-1573080496219-bb080dd4f877'), emoji: '🍟', side: true },
+  { id: 'd4', name: 'Fıstıklı Sufle', desc: 'Sıcak servis, dondurmalı', price: 135, restaurantId: 'r2', cuisine: 'tatli', img: IMG.dessert, emoji: '🍫', side: true },
+  { id: 'd5', name: 'Fırın Sütlaç', desc: 'Geleneksel tarif, tarçınlı', price: 95, restaurantId: 'r2', cuisine: 'tatli', img: u('photo-1488477181946-6428a0291777'), emoji: '🍮', side: true },
+  { id: 'd6', name: 'Margherita Pizza', desc: 'Taş fırın, manda mozzarella', price: 260, restaurantId: 'r3', cuisine: 'pizza', img: IMG.pizza, emoji: '🍕' },
+  { id: 'd7', name: 'Karışık Pizza', desc: 'Sucuk, mantar, biber, zeytin', price: 310, restaurantId: 'r3', cuisine: 'pizza', img: u('photo-1513104890138-7c749659a591'), emoji: '🍕' },
+  { id: 'd8', name: 'Et Döner Dürüm', desc: 'Lavaş, közlenmiş domates', price: 190, restaurantId: 'r4', cuisine: 'doner', img: IMG.doner, emoji: '🌯' },
+  { id: 'd9', name: 'İskender', desc: 'Tereyağlı, yoğurtlu', price: 280, restaurantId: 'r4', cuisine: 'doner', img: IMG.steak, emoji: '🥩' },
+  { id: 'd10', name: 'Ayran', desc: 'Köpüklü, 300 ml', price: 30, restaurantId: 'r4', cuisine: 'kahve', img: u('photo-1563636619-e9143da7973b'), emoji: '🥛', side: true },
+  { id: 'd11', name: 'Somon Sushi Seti', desc: '12 parça, wasabi ve zencefil', price: 340, restaurantId: 'r3', cuisine: 'sushi', img: IMG.sushi, emoji: '🍣' },
+  { id: 'd12', name: 'Sezar Salata', desc: 'Izgara tavuk, parmesan', price: 175, restaurantId: 'r2', cuisine: 'salata', img: IMG.salad, emoji: '🥗' },
+];
+
+export const getDish = (id) => DISHES.find((d) => d.id === id);
+export const getRestaurant = (id) => RESTAURANTS.find((r) => r.id === id);
+
+export const INITIAL_CART = [
+  { dishId: 'd1', qty: 1 },
+  { dishId: 'd4', qty: 1 },
+];
+
+export const COURIERS = ['Murat K.', 'Elif S.', 'Burak T.', 'Zeynep A.'];
+
+export function initialOrders(now = Date.now()) {
+  return [
+    { id: 'G-24817', restaurantId: 'r1', items: [{ dishId: 'd1', qty: 1 }, { dishId: 'd3', qty: 1 }, { dishId: 'd10', qty: 2 }], placed: 'Bugün 19:42', status: 'active', p0: 0.5, t0: now, dur: 1200000, courier: 'Murat K.', rating: null },
+    { id: 'G-24703', restaurantId: 'r3', items: [{ dishId: 'd6', qty: 1 }, { dishId: 'd7', qty: 1 }], placed: 'Dün 20:15', status: 'delivered', rating: null },
+    { id: 'G-24521', restaurantId: 'r2', items: [{ dishId: 'd4', qty: 1 }, { dishId: 'd5', qty: 1 }], placed: '21 Kasım', status: 'delivered', rating: { stars: 5, tags: ['Lezzetli', 'Sıcak geldi'] } },
+    { id: 'G-24390', restaurantId: 'r4', items: [{ dishId: 'd9', qty: 1 }, { dishId: 'd10', qty: 1 }], placed: '18 Kasım', status: 'delivered', rating: null },
+    { id: 'G-24112', restaurantId: 'r3', items: [{ dishId: 'd11', qty: 1 }], placed: '12 Kasım', status: 'cancelled', rating: null },
+  ];
+}
+
+export const RATING_TAGS = ['Lezzetli', 'Hızlı teslimat', 'Sıcak geldi', 'Bol porsiyon', 'Özenli paket'];
+
+export const ACCOUNT = {
+  name: 'Deniz Kaya',
+  email: 'deniz@ornek.com',
+  initials: 'DK',
+  stats: [
+    { label: 'Sipariş', value: '24' },
+    { label: 'Favori', value: '7' },
+    { label: 'Puan', value: '1.280' },
+  ],
+  wallet: '₺125,40',
+  coupons: 3,
+  plus: { title: 'Gurme Plus', desc: 'Ücretsiz teslimat + her siparişte %10', renew: 'Yenileme: 12 Aralık' },
+  groups: [
+    {
+      title: 'Hesabım',
+      items: [
+        { id: 'addresses', label: 'Adreslerim', value: '3 adres', icon: 'MapPin' },
+        { id: 'payments', label: 'Ödeme yöntemleri', value: '•••• 4242', icon: 'CreditCard' },
+        { id: 'favorites', label: 'Favori restoranlar', value: '7', icon: 'Heart' },
+        { id: 'coupons', label: 'Kuponlarım', value: '3 aktif', icon: 'Ticket' },
+      ],
+    },
+    {
+      title: 'Tercihler',
+      items: [
+        { id: 'notif', label: 'Bildirimler', toggle: true, icon: 'Bell' },
+        { id: 'promo', label: 'Kampanya e-postaları', toggle: true, icon: 'Mail' },
+        { id: 'lang', label: 'Dil', value: 'Türkçe', icon: 'Globe' },
+      ],
+    },
+    {
+      title: 'Destek',
+      items: [
+        { id: 'help', label: 'Yardım merkezi', icon: 'LifeBuoy' },
+        { id: 'privacy', label: 'Gizlilik ve güvenlik', icon: 'ShieldCheck' },
+      ],
+    },
+  ],
+};
+
+export const fmtTL = (n) => '₺' + n.toLocaleString('tr-TR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });

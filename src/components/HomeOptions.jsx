@@ -7,7 +7,7 @@ import { BottomNav } from './screen/navs.jsx';
 
 const ANIM_ICONS = { stack: Layers, slide: ArrowLeftRight, coverflow: Box, fade: Sparkle, swipe: Wind };
 
-const Section = ({ title, hint, children }) => (
+export const Section = ({ title, hint, children }) => (
   <div className="mb-6">
     <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-zinc-500">{title}</h3>
     {hint && <p className="mt-1 text-[11px] leading-snug text-zinc-500">{hint}</p>}
@@ -15,11 +15,11 @@ const Section = ({ title, hint, children }) => (
   </div>
 );
 
-const chip = (active) =>
+export const chip = (active) =>
   `rounded-lg px-2.5 py-2 text-left transition ${active ? 'bg-zinc-800 ring-2 ring-orange-500' : 'bg-zinc-900 ring-1 ring-zinc-800 hover:ring-zinc-600'}`;
 
 /** "Şablondan" seçeneği + varyant listesi. */
-function OptionGrid({ options, value, baseId, onChange }) {
+export function OptionGrid({ options, value, baseId, onChange }) {
   const baseName = options.find((o) => o.id === baseId)?.name || '—';
   return (
     <div className="grid grid-cols-2 gap-1.5">
@@ -53,7 +53,8 @@ function NavPreview({ theme, id }) {
   );
 }
 
-export default function ComponentsTab({ state, set }) {
+/** Anasayfa bileşen seçenekleri (Ekranlar → Anasayfa). */
+export function HomeOptions({ state, set }) {
   const o = state.overrides;
   const base = resolveParts(getTemplate(state.templateId), state.platform);
   const custom = Object.values(o).filter(Boolean).length;
@@ -112,7 +113,22 @@ export default function ComponentsTab({ state, set }) {
         </div>
       </Section>
 
-      <Section title="Alt bar tasarımı" hint="Sekmelere tıklayınca aktif sekme değişir; önizlemeler mevcut renklerle çizilir.">
+      {COMPONENT_GROUPS.map((g) => (
+        <Section key={g.key} title={g.title}>
+          <OptionGrid options={g.options} value={o[g.key]} baseId={base[g.key]} onChange={(v) => set.override(g.key, v)} />
+        </Section>
+      ))}
+    </>
+  );
+}
+
+/** Alt bar seçici, canlı önizlemelerle (Ekranlar → Genel). */
+export function NavOptions({ state, set }) {
+  const o = state.overrides;
+  const base = resolveParts(getTemplate(state.templateId), state.platform);
+  return (
+    <>
+      <Section title={`Alt bar tasarımı · ${NAV_VARIANTS.length} seçenek`} hint="Önizlemelerde sekmelere tıklayınca aktif sekme değişir; mevcut renklerle çizilir.">
         <div className="space-y-2">
           <button onClick={() => set.override('nav', null)} className={`${chip(o.nav === null)} w-full`}>
             <div className="flex items-center gap-1.5 text-[12px] font-medium text-zinc-200">
@@ -135,11 +151,6 @@ export default function ComponentsTab({ state, set }) {
         </div>
       </Section>
 
-      {COMPONENT_GROUPS.map((g) => (
-        <Section key={g.key} title={g.title}>
-          <OptionGrid options={g.options} value={o[g.key]} baseId={base[g.key]} onChange={(v) => set.override(g.key, v)} />
-        </Section>
-      ))}
     </>
   );
 }

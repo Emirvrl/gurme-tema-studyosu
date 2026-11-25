@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { Home, UtensilsCrossed, ShoppingCart, ShoppingBasket, ReceiptText, User } from 'lucide-react';
 import { useT } from '../../lib/theme.js';
 import { rgba, mix, contrast } from '../../lib/color.js';
+import { CART_COUNT, NAV_ITEMS, fmtTL } from '../../config/content.js';
+import { useApp, cartTotals } from '../../lib/store.js';
 
 /** Zemin üzerinde okunur ilk rengi seçer (ör. koyu adada siyah ana renk görünmez). */
 const readable = (bg, ...cands) => cands.find((x) => contrast(x, bg) >= 3) || cands[cands.length - 1];
-import { CART_COUNT, NAV_ITEMS } from '../../config/content.js';
+/** Sepetteki ürün sayısı (panel önizlemelerinde sabit demo değeri) */
+const useCartCount = () => useApp()?.store.cartCount ?? CART_COUNT;
 
 // Alt bar varyantları. Kayıt/metadata: src/config/components.js → NAV_VARIANTS
 // Her varyant { c, t, T, active, setActive } alır; sekmelere tıklanınca aktif sekme değişir.
@@ -13,11 +16,15 @@ import { CART_COUNT, NAV_ITEMS } from '../../config/content.js';
 const ICONS = { home: Home, food: UtensilsCrossed, cart: ShoppingCart, orders: ReceiptText, account: User };
 const SIDE_ITEMS = NAV_ITEMS.filter((n) => n.id !== 'cart');
 
-const Badge = ({ c, style }) => (
-  <span className="absolute flex items-center justify-center" style={{ top: -4, right: -6, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99, background: c.accent, color: c.onAccent, fontSize: 10.5, fontWeight: 800, borderWidth: 2, borderStyle: 'solid', borderColor: c.bg, ...style }}>
-    {CART_COUNT}
-  </span>
-);
+function Badge({ c, style }) {
+  const count = useCartCount();
+  if (!count) return null;
+  return (
+    <span key={count} className="absolute flex items-center justify-center" style={{ top: -4, right: -6, minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99, background: c.accent, color: c.onAccent, fontSize: 10.5, fontWeight: 800, borderWidth: 2, borderStyle: 'solid', borderColor: c.bg, animation: 'gurme-pop .35s ease', ...style }}>
+      {count}
+    </span>
+  );
+}
 
 const HomeIndicator = ({ color, android }) => (
   <div className="flex justify-center" style={{ paddingTop: android ? 6 : 8, paddingBottom: android ? 6 : 8 }}>
@@ -256,6 +263,7 @@ function NavNotch({ c, T, active, setActive }) {
 
 /** Genişleyen Kapsül: aktif sekme ikon + yazıyla açılır, diğerleri sadece ikon. */
 function NavExpand({ c, active, setActive }) {
+  const count = useCartCount();
   return (
     <Wrap style={{ padding: '0 14px', background: `linear-gradient(180deg, ${rgba(c.bg, 0)}, ${c.bg} 50%)` }}>
       <div className="flex items-center justify-between" style={{ height: 62, padding: '0 8px', borderRadius: 999, background: c.surface, boxShadow: `0 14px 30px -14px ${c.shadowColor}, inset 0 0 0 1px ${c.hairline}` }}>
@@ -273,7 +281,7 @@ function NavExpand({ c, active, setActive }) {
                 <Icon size={21} strokeWidth={on ? 2.5 : 2} />
                 {n.id === 'cart' && !on && <Badge c={c} style={{ borderColor: c.surface }} />}
               </span>
-              {on && <span className="whitespace-nowrap">{n.id === 'cart' ? `Sepet · ${CART_COUNT}` : n.label}</span>}
+              {on && <span className="whitespace-nowrap">{n.id === 'cart' ? `Sepet · ${count}` : n.label}</span>}
             </div>
           );
         })}
@@ -285,6 +293,8 @@ function NavExpand({ c, active, setActive }) {
 
 /** İkiz Ada: dört sekme bir adada, sepet tutarıyla ayrı bir adada. */
 function NavSplit({ c, active, setActive }) {
+  const app = useApp();
+  const total = app ? fmtTL(cartTotals(app.store.cart, app.store.couponOn).total) : '₺348';
   return (
     <Wrap style={{ padding: '0 14px', background: `linear-gradient(180deg, ${rgba(c.bg, 0)}, ${c.bg} 50%)` }}>
       <div className="flex items-stretch" style={{ gap: 10, height: 62 }}>
@@ -307,7 +317,7 @@ function NavSplit({ c, active, setActive }) {
           </span>
           <span className="flex flex-col leading-tight">
             <span style={{ fontSize: 10.5, opacity: 0.85 }}>Sepet</span>
-            <b style={{ fontSize: 14 }}>₺348</b>
+            <b style={{ fontSize: 14 }}>{total}</b>
           </span>
         </div>
       </div>
@@ -318,6 +328,7 @@ function NavSplit({ c, active, setActive }) {
 
 /** Üst Çizgi: düz bar, aktif sekmenin üstünde çizgi, sepet metin etiketi. */
 function NavTopline({ c, active, setActive }) {
+  const count = useCartCount();
   return (
     <Wrap style={{ background: c.bg, borderTop: `1px solid ${c.hairline}` }}>
       <div className="grid grid-cols-5" style={{ height: 58 }}>
@@ -328,7 +339,7 @@ function NavTopline({ c, active, setActive }) {
             return (
               <div key={n.id} {...tap(setActive, n.id)} className="flex items-center justify-center" style={{ cursor: 'pointer' }}>
                 <span style={{ whiteSpace: 'nowrap', fontSize: 11, fontWeight: 800, letterSpacing: '.03em', padding: '6px 9px', borderRadius: 99, border: `1.5px solid ${c.primary}`, color: on ? c.onPrimary : c.primary, background: on ? c.primary : 'transparent' }}>
-                  SEPET · {CART_COUNT}
+                  SEPET · {count}
                 </span>
               </div>
             );
@@ -412,6 +423,218 @@ function NavDock({ c, T, active, setActive }) {
   );
 }
 
+/* ------------------------------ ek tasarımlar (v3) ------------------------------ */
+
+/** Hap Sekmeler: segment kontrolü gibi, aktif sekme dolu kapsül. */
+function NavSegmented({ c, active, setActive }) {
+  return (
+    <Wrap style={{ padding: '0 14px', background: `linear-gradient(180deg, ${rgba(c.bg, 0)}, ${c.bg} 50%)` }}>
+      <div className="grid grid-cols-5" style={{ padding: 5, borderRadius: 999, background: c.fill, boxShadow: `inset 0 0 0 1px ${c.hairline}`, backdropFilter: 'blur(12px)' }}>
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="relative flex flex-col items-center justify-center" style={{ cursor: 'pointer', height: 52, gap: 2, borderRadius: 999, background: on ? c.surface : 'transparent', boxShadow: on ? `0 4px 12px -4px ${c.shadowColor}` : 'none', color: on ? c.primary : c.muted, fontSize: 10, fontWeight: 700, transition: 'all .25s' }}>
+              <span className="relative flex">
+                <Icon size={19} strokeWidth={on ? 2.5 : 2} />
+                {n.id === 'cart' && <Badge c={c} style={{ top: -6, right: -10 }} />}
+              </span>
+              {n.label}
+            </div>
+          );
+        })}
+      </div>
+      <HomeIndicator color={c.text} />
+    </Wrap>
+  );
+}
+
+/** Sağ FAB: dört sekme düz barda, sepet sağ üstte süzülen Material FAB. */
+function NavFab({ c, active, setActive }) {
+  return (
+    <Wrap>
+      <div className="flex justify-end" style={{ padding: '0 18px 12px' }}>
+        <span {...tap(setActive, 'cart')} className="relative flex items-center" style={{ cursor: 'pointer', gap: 8, height: 56, padding: '0 20px 0 16px', borderRadius: 18, background: c.primary, color: c.onPrimary, fontWeight: 800, fontSize: 14, boxShadow: `0 12px 24px -10px ${c.primary}` }}>
+          <ShoppingBasket size={21} strokeWidth={2.4} /> Sepet
+          <Badge c={c} style={{ top: -6, right: -6 }} />
+        </span>
+      </div>
+      <div style={{ background: c.surface, borderTop: `1px solid ${c.hairline}` }}>
+        <div className="grid grid-cols-4" style={{ height: 58 }}>
+          {SIDE_ITEMS.map((n) => {
+            const Icon = ICONS[n.id];
+            const on = active === n.id;
+            return (
+              <div key={n.id} {...tap(setActive, n.id)} className="flex flex-col items-center justify-center" style={{ cursor: 'pointer', gap: 3, color: on ? c.primary : c.muted, fontSize: 11, fontWeight: on ? 700 : 500 }}>
+                <Icon size={21} strokeWidth={on ? 2.5 : 1.9} />
+                {n.label}
+              </div>
+            );
+          })}
+        </div>
+        <HomeIndicator color={c.text} />
+      </div>
+    </Wrap>
+  );
+}
+
+/** İkon + Nokta: etiketsiz ikonlar, aktif altında uzayan nokta; sepet sayısı yanında yazılı. */
+function NavIconDot({ c, active, setActive }) {
+  const count = useCartCount();
+  return (
+    <Wrap style={{ background: c.surface, boxShadow: `0 -1px 0 ${c.hairline}` }}>
+      <div className="flex items-center justify-around" style={{ height: 60 }}>
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="flex flex-col items-center" style={{ cursor: 'pointer', gap: 5, color: on ? c.primary : c.muted }}>
+              <span className="flex items-center" style={{ gap: 4 }}>
+                <Icon size={24} strokeWidth={on ? 2.5 : 1.8} />
+                {n.id === 'cart' && count > 0 && <b style={{ fontSize: 12, color: c.text }}>{count}</b>}
+              </span>
+              <span style={{ width: on ? 18 : 4, height: 4, borderRadius: 9, background: on ? c.primary : 'transparent', transition: 'width .25s' }} />
+            </div>
+          );
+        })}
+      </div>
+      <HomeIndicator color={c.text} />
+    </Wrap>
+  );
+}
+
+/** Gradyan Şerit: ana → vurgu gradyanlı ada, aktif sekme beyaz kapsül. */
+function NavGradient({ c, active, setActive }) {
+  const fg = readable(c.primary, '#FFFFFF', '#111113');
+  return (
+    <Wrap style={{ padding: '0 14px' }}>
+      <div className="grid grid-cols-5 items-center" style={{ height: 64, padding: '0 6px', borderRadius: 24, background: `linear-gradient(100deg, ${c.primary}, ${mix(c.primary, c.accent, 0.7)})`, boxShadow: `0 14px 28px -14px ${c.primary}` }}>
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="flex justify-center">
+              <span className="relative flex flex-col items-center justify-center" style={{ cursor: 'pointer', width: 58, height: 50, gap: 2, borderRadius: 16, background: on ? '#FFFFFF' : 'transparent', color: on ? c.primary : rgba(fg, 0.85), fontSize: 10, fontWeight: 700, transition: 'all .25s' }}>
+                <Icon size={20} strokeWidth={2.3} />
+                {n.label}
+                {n.id === 'cart' && <Badge c={c} style={{ top: 0, right: 6, borderColor: 'transparent', background: c.secondary, color: c.onSecondary }} />}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <HomeIndicator color={c.text} />
+    </Wrap>
+  );
+}
+
+/** Kabarcık: aktif sekmenin ikonu bardan yukarı taşan bir daireye kayar. */
+function NavBubble({ c, T, active, setActive }) {
+  const idx = Math.max(0, NAV_ITEMS.findIndex((n) => n.id === active));
+  const W = 390 / 5;
+  const ActiveIcon = ICONS[NAV_ITEMS[idx].id];
+  return (
+    <Wrap>
+      <div className="relative" style={{ height: 64, background: c.surface, boxShadow: `0 -8px 20px -14px ${rgba(c.text, T.dark ? 0.6 : 0.3)}` }}>
+        <span className="absolute flex items-center justify-center" style={{ left: idx * W + W / 2 - 27, top: -24, width: 54, height: 54, borderRadius: 999, background: c.primary, color: c.onPrimary, border: `5px solid ${c.bg}`, boxShadow: `0 8px 16px -6px ${c.primary}`, transition: 'left .4s cubic-bezier(.3,1.3,.5,1)' }}>
+          <ActiveIcon size={21} strokeWidth={2.4} />
+        </span>
+        <div className="grid grid-cols-5" style={{ height: 64 }}>
+          {NAV_ITEMS.map((n) => {
+            const Icon = ICONS[n.id];
+            const on = active === n.id;
+            return (
+              <div key={n.id} {...tap(setActive, n.id)} className="flex flex-col items-center justify-end" style={{ cursor: 'pointer', paddingBottom: 9, gap: 4, color: on ? c.primary : c.muted, fontSize: 10.5, fontWeight: on ? 700 : 500 }}>
+                <span className="relative flex" style={{ opacity: on ? 0 : 1, transition: 'opacity .2s' }}>
+                  <Icon size={20} strokeWidth={1.9} />
+                  {n.id === 'cart' && <Badge c={c} style={{ borderColor: c.surface }} />}
+                </span>
+                {n.label}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ background: c.surface }}>
+        <HomeIndicator color={c.text} />
+      </div>
+    </Wrap>
+  );
+}
+
+/** Kontur Kutu: her sekme çerçeveli kutu, aktif kutu dolu (taslak diline yakın). */
+function NavOutlineBox({ c, t, active, setActive }) {
+  return (
+    <Wrap style={{ background: c.bg, borderTop: `1px solid ${c.hairline}` }}>
+      <div className="grid grid-cols-5" style={{ gap: 6, padding: '8px 10px 2px' }}>
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="relative flex flex-col items-center justify-center" style={{ cursor: 'pointer', height: 52, gap: 2, borderRadius: Math.min(12, t.radius.control), border: `1.5px solid ${on ? c.text : c.hairline}`, background: on ? c.text : 'transparent', color: on ? c.bg : c.text, fontSize: 10, fontWeight: 700 }}>
+              <Icon size={18} strokeWidth={2.2} />
+              {n.label}
+              {n.id === 'cart' && <Badge c={c} style={{ top: -7, right: -5 }} />}
+            </div>
+          );
+        })}
+      </div>
+      <HomeIndicator color={c.text} />
+    </Wrap>
+  );
+}
+
+/** Kayan Çizgi: üstte aktif sekmeye kayan çizgi. */
+function NavSlider({ c, t, active, setActive }) {
+  const count = useCartCount();
+  const idx = Math.max(0, NAV_ITEMS.findIndex((n) => n.id === active));
+  return (
+    <Wrap style={{ background: c.bg, borderTop: `1px solid ${c.hairline}` }}>
+      <div className="relative grid grid-cols-5" style={{ height: 56 }}>
+        <span className="absolute top-0" style={{ left: `calc(${idx * 20 + 10}% - 16px)`, width: 32, height: 3, borderRadius: '0 0 4px 4px', background: c.primary, transition: 'left .35s cubic-bezier(.3,1.2,.5,1)' }} />
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="flex flex-col items-center justify-center" style={{ cursor: 'pointer', gap: 4, color: on ? c.text : c.muted, fontFamily: t.fonts.head }}>
+              <Icon size={21} strokeWidth={on ? 2.5 : 1.7} />
+              <span style={{ fontSize: 11, fontWeight: on ? 800 : 500 }}>{n.id === 'cart' && count ? `${n.label} (${count})` : n.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <HomeIndicator color={c.text} />
+    </Wrap>
+  );
+}
+
+/** Klasör Sekmeleri: aktif sekme yükselmiş bir klasör kulağı gibi. */
+function NavFolder({ c, T, active, setActive }) {
+  const recess = mix(c.surface, c.text, T.dark ? 0.12 : 0.06);
+  return (
+    <Wrap style={{ background: recess }}>
+      <div className="grid grid-cols-5 items-end" style={{ height: 62, padding: '0 6px' }}>
+        {NAV_ITEMS.map((n) => {
+          const Icon = ICONS[n.id];
+          const on = active === n.id;
+          return (
+            <div key={n.id} {...tap(setActive, n.id)} className="relative flex flex-col items-center justify-center" style={{ cursor: 'pointer', height: on ? 60 : 50, gap: 3, borderRadius: '16px 16px 0 0', background: on ? c.bg : 'transparent', color: on ? c.primary : c.muted, fontSize: 10.5, fontWeight: on ? 800 : 500, boxShadow: on ? `0 -6px 14px -10px ${c.shadowColor}` : 'none', transition: 'all .25s' }}>
+              <span className="relative flex">
+                <Icon size={20} strokeWidth={on ? 2.5 : 1.9} />
+                {n.id === 'cart' && <Badge c={c} style={{ borderColor: on ? c.bg : recess }} />}
+              </span>
+              {n.label}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ background: c.bg }}>
+        <HomeIndicator color={c.text} />
+      </div>
+    </Wrap>
+  );
+}
+
 const REGISTRY = {
   arch: NavArch,
   ios: NavIos,
@@ -426,11 +649,22 @@ const REGISTRY = {
   topline: NavTopline,
   brutal: NavBrutal,
   dock: NavDock,
+  segmented: NavSegmented,
+  fab: NavFab,
+  iconDot: NavIconDot,
+  gradient: NavGradient,
+  bubble: NavBubble,
+  outlineBox: NavOutlineBox,
+  slider: NavSlider,
+  folder: NavFolder,
 };
 
 export function BottomNav() {
   const T = useT();
-  const [active, setActive] = useState('home');
+  const app = useApp();
+  const [local, setLocal] = useState('home');
+  const active = app ? app.store.screen : local;
+  const setActive = app ? app.store.navigate : setLocal;
   const Comp = REGISTRY[T.parts.nav] || NavArch;
   return <Comp c={T.c} t={T.t} T={T} active={active} setActive={setActive} />;
 }

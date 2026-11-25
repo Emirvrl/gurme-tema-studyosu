@@ -1,3 +1,5 @@
+import { BRAND_TEMPLATES } from './brands.js';
+
 // Şablon kayıt defteri.
 // Bir şablon; tipografi, köşe yuvarlaklıkları, yüzey stili ve her ekran parçası için
 // hangi görsel varyantın kullanılacağını tanımlar. Yerleşim (layout) her şablonda aynıdır.
@@ -8,7 +10,7 @@
 // platformParts: Yalnızca platforma göre belirgin fark varsa doldurulur (iOS HIG vs Material 3).
 // surface: 'outline' | 'flat' | 'elevated' | 'glass' | 'soft'
 
-export const TEMPLATES = [
+const BASE_TEMPLATES = [
   {
     id: 'pdf',
     name: 'PDF Referans',
@@ -136,6 +138,8 @@ export const TEMPLATES = [
     ],
   },
 ];
+
+export const TEMPLATES = [...BASE_TEMPLATES, ...BRAND_TEMPLATES];
 
 export const PLATFORMS = [
   { id: 'ortak', label: 'Ortak' },

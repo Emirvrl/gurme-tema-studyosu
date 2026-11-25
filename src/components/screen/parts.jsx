@@ -39,7 +39,7 @@ export const HScroll = ({ children, gap = 14, px = 16, style }) => (
 /* Durum çubuğu                                                        */
 /* ------------------------------------------------------------------ */
 
-export function StatusBar() {
+export function StatusBar({ band = false }) {
   const T = useT();
   const { c, platform, t } = T;
   const android = platform === 'android';
@@ -50,10 +50,10 @@ export function StatusBar() {
       style={{
         height: 48,
         padding: android ? '0 22px' : '0 30px 0 34px',
-        background: glass ? rgba(c.bg, 0.55) : c.bg,
+        background: band ? c.primary : glass ? rgba(c.bg, 0.55) : c.bg,
         backdropFilter: glass ? 'blur(14px)' : undefined,
         WebkitBackdropFilter: glass ? 'blur(14px)' : undefined,
-        color: c.text,
+        color: band ? c.onPrimary : c.text,
         fontFamily: android ? "'Inter', sans-serif" : "-apple-system, 'SF Pro Text', 'Inter', sans-serif",
       }}
     >
@@ -83,17 +83,20 @@ export function Header({ logo }) {
     bold: { ...pillBase, background: c.primarySoft, color: c.text, fontWeight: 600 },
     glass: { ...pillBase, ...T.surf('chip') },
     editorial: { ...pillBase, background: 'transparent', padding: '0 2px', borderRadius: 0, fontStyle: 'italic', fontFamily: t.fonts.head, fontSize: 13.5 },
+    band: { ...pillBase, background: rgba(c.onPrimary, 0.16), color: c.onPrimary, fontWeight: 600 },
   };
-  const iconColor = v === 'rule' ? c.text : c.primary;
+  const iconColor = v === 'rule' ? c.text : v === 'band' ? c.accent : c.primary;
 
   return (
     <div
       className="flex items-center"
       style={{
         gap: 12,
-        padding: v === 'editorial' ? '6px 18px 10px' : '4px 16px 12px',
+        padding: v === 'editorial' ? '6px 18px 10px' : v === 'band' ? '4px 16px 18px' : '4px 16px 12px',
         borderBottom: v === 'rule' ? `2px solid ${c.text}` : 'none',
-        marginBottom: v === 'rule' ? 12 : 0,
+        marginBottom: v === 'rule' || v === 'band' ? 14 : 0,
+        background: v === 'band' ? c.primary : 'transparent',
+        borderRadius: v === 'band' ? '0 0 24px 24px' : 0,
       }}
     >
       <div className="flex shrink-0 items-center" style={{ maxWidth: '40%', minHeight: 40 }}>
@@ -105,7 +108,7 @@ export function Header({ logo }) {
           <span className="truncate" style={v === 'editorial' ? { textDecoration: 'underline', textDecorationStyle: 'dotted', textUnderlineOffset: 3 } : undefined}>
             {ADDRESS}
           </span>
-          {(v === 'bold' || v === 'plain' || v === 'glass') && <ChevronDown size={14} className="shrink-0" color={c.muted} />}
+          {(v === 'bold' || v === 'plain' || v === 'glass' || v === 'band') && <ChevronDown size={14} className="shrink-0" color={v === 'band' ? c.onPrimary : c.muted} />}
         </div>
       </div>
     </div>
@@ -357,7 +360,7 @@ function CuisineImg({ it, mode, size, fill = false, round = false }) {
   );
 }
 
-export function CuisineRow({ items }) {
+export function CuisineRow({ items, onPick }) {
   const T = useT();
   const { c, t, parts, cuisineImage: mode } = T;
   const v = parts.cuisine;
@@ -423,7 +426,7 @@ export function CuisineRow({ items }) {
           lbl = label(it.name, { fontWeight: 700 });
         }
         return (
-          <div key={it.id} className="flex shrink-0 flex-col items-center">
+          <div key={it.id} className="flex shrink-0 flex-col items-center" onClick={() => onPick?.(it.id)} style={{ cursor: onPick ? 'pointer' : 'default' }}>
             {visual}
             {lbl}
           </div>

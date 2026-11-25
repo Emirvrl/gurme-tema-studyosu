@@ -70,7 +70,7 @@ function ProsCons({ pros, cons }) {
   );
 }
 
-export default function RightPanel({ report, templateName, logoName, navName, onFix }) {
+export default function RightPanel({ report, templateName, logoName, navName, screenNotes, onFix }) {
   const { score, contrasts, notes, harmony, mood, ratio, dark } = report;
   const verdict = score >= 85 ? 'Yayına yakın, dengeli bir kombinasyon' : score >= 70 ? 'İyi, birkaç ince ayarla güçlenir' : score >= 50 ? 'Dikkat gerektiren sorunlar var' : 'Okunabilirlik ciddi risk altında';
 
@@ -174,6 +174,12 @@ export default function RightPanel({ report, templateName, logoName, navName, on
       <Card title={`Logo: ${logoName}`} icon={<span className="h-2 w-2 rounded-full bg-sky-400" />}>
         <ProsCons {...report.logo} />
       </Card>
+
+      {screenNotes && (screenNotes.pros.length > 0 || screenNotes.cons.length > 0) && (
+        <Card title={`Ekran: ${screenNotes.name}`} icon={<span className="h-2 w-2 rounded-full bg-emerald-400" />}>
+          <ProsCons pros={screenNotes.pros} cons={screenNotes.cons} />
+        </Card>
+      )}
 
       <Card title={`Alt Bar: ${navName}`} icon={<span className="h-2 w-2 rounded-full bg-violet-400" />}>
         <ProsCons {...report.nav} />

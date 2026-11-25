@@ -1,3 +1,4 @@
+import { getScreen, TONES } from '../config/screens.js';
 // İstemci tarafı UX/UI danışmanı: renk, şablon ve logo seçimlerini değerlendirir.
 import { contrast, hexToHsl, hueDistance, isDark, luminance, onColor, fixContrast, suggestSurface, mix } from './color.js';
 import { getLogoStyle } from '../config/logoStyles.js';
@@ -250,4 +251,37 @@ export function evaluate({ colors, template, logo, navId }) {
     logo: { pros: lPros.slice(0, 4), cons: lCons.slice(0, 4) },
     nav: { pros: nPros.slice(0, 4), cons: nCons.slice(0, 4) },
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Ekran değerlendirmesi (Sipariş, Sepet, Hesap, Yemek)                */
+/* ------------------------------------------------------------------ */
+
+export function screenReview(screenId, screenOpts, colors, ui) {
+  const screen = getScreen(screenId);
+  const opts = screenOpts[screenId] || {};
+  const pros = [];
+  const cons = [];
+  for (const group of screen.options) {
+    const o = group.options.find((x) => x.id === opts[group.key]);
+    if (o?.pro) pros.push(`${group.title} · ${o.name}: ${o.pro}`);
+    if (o?.con) cons.push(`${group.title} · ${o.name}: ${o.con}`);
+  }
+  const toneHex = { primary: colors.primary, accent: colors.accent, secondary: colors.secondary, mono: colors.text }[opts.tone || 'primary'];
+  const toneName = TONES.find((x) => x.id === (opts.tone || 'primary'))?.name;
+  if (toneHex) {
+    const cr = contrast(toneHex, colors.bg);
+    if (cr < 2.2) cons.unshift(`Ekran butonları "${toneName}" renginde ve zeminle ${cr.toFixed(1).replace('.', ',')}:1 kontrastta; butonlar kayboluyor.`);
+    else if (opts.tone === 'mono') pros.unshift('Mono (metin rengi) butonlar sakin ve premium; renkli vurgular kampanyalara kalır.');
+    else if (opts.tone === 'accent') pros.unshift('Vurgu renginde butonlar ekranı anasayfadan ayırır ve eylemleri öne çıkarır.');
+  }
+  if (screenId === 'orders' && opts.status === opts.tone) cons.push('Durum rozeti ve butonlar aynı renkte; "yolda" bilgisi eylemlerle karışabilir.');
+  if (screenId === 'orders' && opts.tracker === 'map' && opts.card === 'receipt') cons.push('Harita + fiş kartları birlikte çok süslü; ekran yoğunlaşıyor.');
+  if (screenId === 'cart' && opts.checkout === 'slide' && ui?.btnStyle === 'text') cons.push('Kaydırma butonu "yazı" stilinde zayıf görünür; dolgu stil daha iyi.');
+  if (ui?.btnStyle === 'text') cons.push('Yazı-stil butonlar ana eylemler için fazla hafif; dönüşüm düşebilir.');
+  if (ui?.btnStyle === 'filled') pros.push('Dolgu butonlar ana eylemi (sipariş, tekrarla) en net haliyle gösteriyor.');
+  if (screenId === 'home') {
+    pros.push('Anasayfa düzenini "Ekranlar" sekmesinden yeniden sıralayabilir, bölüm gizleyebilirsin.');
+  }
+  return { name: screen.label, pros: pros.slice(0, 4), cons: cons.slice(0, 4) };
 }

@@ -1,3 +1,5 @@
+import { BRAND_PALETTES } from './brands.js';
+
 // Renk paleti kayıt defteri.
 // Yeni palet eklemek için diziye bir nesne eklemen yeterli.
 // Alanlar: primary (ana), accent (vurgu), secondary (destek), bg (zemin), surface (kart), text (metin).
@@ -11,7 +13,7 @@ export const COLOR_KEYS = [
   { key: 'text', label: 'Metin', hint: 'Başlık ve gövde metni' },
 ];
 
-export const PALETTES = [
+const BASE_PALETTES = [
   {
     id: 'pdf',
     name: 'PDF Orijinal',
@@ -73,5 +75,7 @@ export const PALETTES = [
     colors: { primary: '#0E7490', accent: '#FF7A59', secondary: '#FBBF24', bg: '#F3FAFB', surface: '#FFFFFF', text: '#0C2A33' },
   },
 ];
+
+export const PALETTES = [...BASE_PALETTES, ...BRAND_PALETTES];
 
 export const getPalette = (id) => PALETTES.find((p) => p.id === id) || PALETTES[0];
